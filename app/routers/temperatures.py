@@ -1,12 +1,13 @@
 import logging
+from datetime import datetime
+from typing import List
 
+import aiohttp
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
+
 from app import crud, schemas
 from app.dependencies import get_db
-from datetime import datetime
-import aiohttp
 
 router = APIRouter()
 
@@ -21,10 +22,12 @@ async def update_temperatures(
     temperatures = []
     async with aiohttp.ClientSession() as session:
         for city in cities:
-            async with session.get(
-                f"http://api.openweathermap.org/data/2.5/weather?q={city.name}"
-                f"&appid={API_KEY}"
-            ) as response:
+            url = "http://api.openweathermap.org/data/2.5/weather"
+            params = {
+                'q': city.name,
+                'appid': API_KEY
+            }
+            async with session.get(url, params=params) as response:
                 if response.status != 200:
                     logging.error(
                         f"Failed to fetch weather data for city: {city.name},"
